@@ -7,9 +7,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.sada.web.auth.CPBAuthenticationFilter;
+import com.sada.web.auth.CustomAuthenticationFailureHandler;
 import com.sada.web.auth.CustomAuthenticationProvider;
 
 @Configuration
@@ -19,32 +19,33 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
 
-	@Bean
+	/*@Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
-	}
+	}*/
+	
+	@Autowired
+	private CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
 	
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.addFilterBefore(customCPBAuthenticationFilter(), CPBAuthenticationFilter.class);
 		http
-                .authorizeRequests()
-                    .antMatchers("/resources/**", "/welcome","/home").permitAll()
-                    .anyRequest().authenticated()
-                    .and()
-                .formLogin()
-                    .loginPage("/login")
-                    .failureForwardUrl("/login?error=Authentication failed")
-                    .defaultSuccessUrl("/welcome")
-                    .permitAll()
-                    .and()
-                .logout()
-                    .permitAll();
+                .authorizeRequests().antMatchers("/resources/**", "/","/home","/error").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin().loginPage("/login").permitAll().failureHandler(customAuthenticationFailureHandler)
+                .and()
+                .logout().permitAll()
+                .and()
+                .addFilterBefore(customCPBAuthenticationFilter(), CPBAuthenticationFilter.class)
+                .csrf().disable();
+                
 	}
 	@Autowired
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
+        	.eraseCredentials(false)
             .authenticationProvider(this.customAuthenticationProvider);
     }
 	

@@ -22,9 +22,8 @@
 <title>Welcome</title>
 </head>
 <body>
-	<h1>Welcome to CPB Demo App</h1>
+	<h1>Welcome to CPB Demo App</h1> <a href="<c:url value="/logout" />">Logout</a>
 	<hr>
-	<a href="login" >Click here to login</a>
 	<div class="form">
 		<form action="hello" method="post" onsubmit="return validate()">
 			<table>

@@ -3,6 +3,7 @@ package com.sada.web.auth;
 import java.util.ArrayList;
 
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -19,7 +20,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 		String name = authentication.getName();
         UserCredential credentials = (UserCredential) authentication.getCredentials();
         
-        System.out.println("Name = " + name + " ,Password = " + credentials);
+        System.out.println("Name = " + name + " ,Unix Password = " + credentials.getPassword() + ", MF Password = " + credentials.getPasswordMF());
         
         // use the credentials and authenticate against the third-party system
         if(shouldAuthenticateAgainstThirdPartySystem(name, credentials)){
@@ -27,13 +28,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         	auth = new UsernamePasswordAuthenticationToken(name, credentials, new ArrayList<>());	
         } else {
         	System.out.println("Login fail!");
+        	throw new BadCredentialsException("Username/Unix Password/MF Password does not match");
         }
 		return auth;
 	}
 
 	@Override
 	public boolean supports(Class<?> authentication) {
-		return authentication.equals(UsernamePasswordAuthenticationToken.class);
+		return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
 	}
 
 	private boolean shouldAuthenticateAgainstThirdPartySystem(String name, UserCredential credentials) {
